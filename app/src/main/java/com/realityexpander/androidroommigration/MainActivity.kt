@@ -19,8 +19,8 @@ class MainActivity : ComponentActivity() {
                 "users.db"
             )
             .addMigrations(
-                UserDatabase.migration4To5,
-                UserDatabase.migration5To6
+//                UserDatabase.migration4To5,
+//                UserDatabase.migration5To6
             )
             .build()
 
@@ -29,13 +29,18 @@ class MainActivity : ComponentActivity() {
             db.dao.getUsers().forEach(::println)
         }
 
-        // Show schools in debug console
+        // Show schools in debug console - Version 6 of db
+//        lifecycleScope.launch {
+//            db.dao.getSchools().forEach(::println)
+//        }
+
+        // get a single user (student)
         lifecycleScope.launch {
-            db.dao.getSchools().forEach(::println)
+            println("Student user test 1 = " + db.dao.getUser("User test 1"))
         }
 
         // Generate new data
-        (1..10).forEach {
+        (1..10).forEach { _ ->
             lifecycleScope.launch {
                 // Add students/users
 //                db.dao.insertUser(
