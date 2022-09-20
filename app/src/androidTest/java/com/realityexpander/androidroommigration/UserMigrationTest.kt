@@ -32,6 +32,7 @@ private const val DB_NAME = "test13"
 @RunWith(AndroidJUnit4::class)
 class UserMigrationTest {
 
+    // FIX : Make this for each individual test
     @get:Rule
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
