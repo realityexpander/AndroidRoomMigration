@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [User::class, School::class], // version 6 of db
     version = 6,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2),  // adding a column (created) is an AutoMigration
+        AutoMigration(from = 1, to = 2),  // adding a column (created) is an AutoMigration, no spec needed
         AutoMigration(from = 2, to = 3, spec = UserDatabase.Migration2To3::class),
         AutoMigration(from = 3, to = 4, spec = UserDatabase.Migration3To4::class),
     ]
