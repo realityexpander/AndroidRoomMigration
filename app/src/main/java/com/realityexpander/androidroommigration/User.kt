@@ -13,7 +13,7 @@ data class User(
     @PrimaryKey(autoGenerate = false)
     val email: String,    // version 1 of db
 
-//    @ColumnInfo(name = "username", defaultValue = "0") // version 1 of db
+    //@ColumnInfo(name = "username", defaultValue = "0") // version 1 of db
     //val username: String, // version 1 of db
     @ColumnInfo(name = "student_name", defaultValue = "0") // version 5 of db
     val studentName: String, // version 4 of db
