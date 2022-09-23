@@ -29,9 +29,10 @@ private const val DB_NAME = "test13"
 // Show columns for table
 // PRAGMA table_info(user)
 
-// Adam Mcneilly
+// Adam Mcneilly's videos
 // https://medium.com/androiddevelopers/understanding-migrations-with-room-f01e04b07929
 // https://www.youtube.com/watch?v=tUGUNU6DPtk
+// https://github.com/AdamMc331/mastering-room-migrations
 
 @RunWith(AndroidJUnit4::class)
 class UserMigrationTest {
