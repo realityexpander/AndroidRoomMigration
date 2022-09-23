@@ -29,23 +29,24 @@ private const val DB_NAME = "test13"
 // Show columns for table
 // PRAGMA table_info(user)
 
+// Adam Mcneilly
+// https://medium.com/androiddevelopers/understanding-migrations-with-room-f01e04b07929
+// https://www.youtube.com/watch?v=tUGUNU6DPtk
+
 @RunWith(AndroidJUnit4::class)
 class UserMigrationTest {
 
-    // FIX : Make this for each individual test
     @get:Rule
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
         UserDatabase::class.java,
-        listOf(
-            UserDatabase.Migration2To3(),
-            UserDatabase.Migration3To4(),
-        ),
+        listOf(),
         FrameworkSQLiteOpenHelperFactory()
     )
 
     @Test
     fun migration1To2_containsCorrectData() {
+
         var db = helper.createDatabase(DB_NAME, 1).apply {
             execSQL("INSERT INTO user VALUES('test@test.com', 'Philipp')")  // note must use SQL
             close()
@@ -64,12 +65,24 @@ class UserMigrationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun migration2To3_containsCorrectData() {
-        var db = helper.createDatabase(DB_NAME, 2).apply {
+
+        val helper2to3 = MigrationTestHelper(
+            InstrumentationRegistry.getInstrumentation(),
+            UserDatabase::class.java,
+            listOf(
+                UserDatabase.Migration2To3(),
+            ),
+            FrameworkSQLiteOpenHelperFactory()
+        )
+
+        var db =
+            helper2to3.createDatabase(DB_NAME, 2)
+                .apply {
             execSQL("INSERT INTO user VALUES('test@test.com', 'Philipp', 100)")  // note must use SQL
             close()
         }
 
-        db = helper.runMigrationsAndValidate(DB_NAME, 3, true)
+        db = helper2to3.runMigrationsAndValidate(DB_NAME, 3, true)
 
         db.query("SELECT * FROM user").apply {
             assertThat(moveToFirst()).isTrue()
@@ -105,20 +118,30 @@ class UserMigrationTest {
     @Test
     fun migration3To4_containsCorrectData() {
 
+        val helper3to4 = MigrationTestHelper(
+            InstrumentationRegistry.getInstrumentation(),
+            UserDatabase::class.java,
+            listOf(
+                UserDatabase.Migration2To3(),
+                UserDatabase.Migration3To4(),
+            ),
+            FrameworkSQLiteOpenHelperFactory()
+        )
+
         val testUserName = "Phillip"
-        var db = helper.createDatabase(DB_NAME, 3).apply {
+        var db = helper3to4.createDatabase(DB_NAME, 3).apply {
             execSQL("INSERT INTO user VALUES('test@test.com', '$testUserName', 100)")  // note must use SQL
 
-            println("Columns before migration: " + query("Select * from user").columnNames.joinToString { it })
+            println("SQL Columns before migration: " + query("Select * from user").columnNames.joinToString { it })
 
             // Get the tables before migration
             val tableNames = getDatabaseTables()
-            println("Tables before migration: " +  tableNames.joinToString { it })
+            println("SQL Tables before migration: " +  tableNames.joinToString { it })
 
             close()
         }
 
-        db = helper.runMigrationsAndValidate(DB_NAME, 4, true)
+        db = helper3to4.runMigrationsAndValidate(DB_NAME, 4, true)
 
         db.query("SELECT * FROM user").apply {
             assertThat(moveToFirst()).isTrue()
@@ -146,11 +169,11 @@ class UserMigrationTest {
             .apply {
 
                 testScope.runTest {
-                    println("Columns After migration: " + query(SimpleSQLiteQuery("Select * from user", null)).columnNames.joinToString { it })
+                    println("SQL Columns After migration: " + query(SimpleSQLiteQuery("Select * from user", null)).columnNames.joinToString { it })
 
                     // Get the tables after migration
                     val tableNames = getDatabaseTables()
-                    println("Tables after migration: " +  tableNames.joinToString { it })
+                    println("SQL Tables after migration: " +  tableNames.joinToString { it })
 
                     val studentTestName = "student test name"
                     dao.insertUser(User("test@email.com", studentTestName, 100))
@@ -211,9 +234,11 @@ class UserMigrationTest {
 
                 testScope.runTest {
 
+                    println("SQL Columns After migration: " + query(SimpleSQLiteQuery("Select * from user", null)).columnNames.joinToString { it })
+
                     // Get the tables after migration
                     val tableNames = getDatabaseTables()
-                    println("Tables after migration: " +  tableNames.joinToString { it })
+                    println("SQL Tables after migration: " +  tableNames.joinToString { it })
 
                     val studentTestName = "student test name"
                     dao.insertUser(User("test@email.com", studentTestName, 100))
@@ -225,7 +250,6 @@ class UserMigrationTest {
                     val queryString = "SELECT * FROM user WHERE student_name=?"
                     val args = ArrayList<String>()
                     args.add(studentTestName)
-
                     println("getRawQuery =" + dao.getUserRawQuery(SimpleSQLiteQuery(queryString, args.toArray())))
                     assertThat(dao.getUserRawQuery(SimpleSQLiteQuery(queryString, args.toArray()))).isNotEmpty()
 
@@ -245,7 +269,7 @@ class UserMigrationTest {
 
             // Get the tables before migration
             val tableNames = getDatabaseTables()
-            println("Tables before migration: " +  tableNames.joinToString { it })
+            println("SQL Tables before migration: " +  tableNames.joinToString { it })
 
             close()
         }
@@ -320,7 +344,17 @@ class UserMigrationTest {
 
     @Test
     fun testAllMigrations() {
-        helper.createDatabase(DB_NAME, 1).apply { close() }
+        val helper2to4 = MigrationTestHelper(
+            InstrumentationRegistry.getInstrumentation(),
+            UserDatabase::class.java,
+            listOf(
+                UserDatabase.Migration2To3(),
+                UserDatabase.Migration3To4(),
+            ),
+            FrameworkSQLiteOpenHelperFactory()
+        )
+
+        helper2to4.createDatabase(DB_NAME, 1).apply { close() }
 
         // The custom migrations must be tested one at a time, only the last migration will
         //  run properly. *CANNOT* run each incremental migration.
